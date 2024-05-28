@@ -1,0 +1,27 @@
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName = 'ax.dkarlsso.valheim.ValheimCdkApp'
+group = 'ax.dkarlsso'
+version = '1.0'
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    implementation 'software.amazon.awscdk:aws-cdk-lib:2.134.0'
+    implementation 'software.constructs:constructs:10.3.0'
+}

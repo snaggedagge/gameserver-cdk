@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-auto-scaling": "^3.540.0",
+    "@aws-sdk/client-ec2": "^3.544.0"
+  }
+}
