@@ -1,8 +1,8 @@
 #!/bin/bash
 
-source /etc/profile.d/valheim-environment.sh
+source /etc/profile.d/environment-variables.sh
 
-NUM_PLAYERS=$(npx gamedig --type valheim valheim.dkarlsso.com | jq .numplayers)
+NUM_PLAYERS=$(npx gamedig --type enshrouded enshrouded.dkarlsso.com | jq .numplayers)
 uptime_minutes=$(awk '{print int($1)}' /proc/uptime)
 if [ "$NUM_PLAYERS" == "0" ]; then
    echo "Server is empty"
