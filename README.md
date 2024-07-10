@@ -1,30 +1,18 @@
 # gameserver-cdk
 
-CDK project that currently only supports booting a valheim server.
-
-Could nicely be extended to support multiple various games though, especially if mixed up with some neat design patterns.
+CDK project that currently supports booting a Valheim or Enshrouded server.
 
 ## Infra description
 
 The infrastructure uses a Autoscaling group to boot a single EC2 instance.
 ASG's was chosen in order to leverage EC2 spot instances.
 
-But since the EC2 instance will change, I thought it easiest to use EFS for storage since that is quite easily attached to multiple different EC2.
-I have discovered however that EBS volumes can be attached programmatically after instance startup and even to multiple instances, so that could be used as well.
-EFS cost 0.30$ per-gb-month (0.3$ for 1 GB per month) and EBS costs 0.08 (And even less when not mounted I think).
+It is possible to choose between using EBS for storage, or EFS.
 
-So for a valheim server of just a few GB's it does not matter much, since it accumulates 1.3$ per month. 
-But for games requiring a lot of harddrive, this might need to be reconsidered.
-
-
-This server is started by entering a URL such as https://valheim-management.dkarlsso.com/start?password=superSecret 
+This server is started by entering a URL such as https://game-management.dkarlsso.com/start?password=superSecret 
 into the browser, which will boot up the EC2 instance before you have had time to start the game and connect.
 
 That is done with a simple Lambda, connected to API Gateway.
-
-Route53 is also used here since I anyway has a domain lying around, but that is not really a requirement.
-The EC2 instance registers itself in Route53 on startup, so gameserver is connectable via valheim.dkarlsso.com.
-
 
 The EC2 instance keeps track of if the server is empty via a simple CRON script running on server. 
 So it runs every 30 minutes, and if the server is empty it will update the ASG desired size to 0, 

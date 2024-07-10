@@ -1,12 +1,20 @@
 import { EC2Client, DescribeInstancesCommand, StartInstancesCommand } from "@aws-sdk/client-ec2";
-import { AutoScalingClient, SetDesiredCapacityCommand } from "@aws-sdk/client-auto-scaling"; // ES Modules import
+import { AutoScalingClient, SetDesiredCapacityCommand } from "@aws-sdk/client-auto-scaling";
+import { GameConfiguration } from "./game-configuration.ts";
 const client = new EC2Client({ region: "eu-north-1" });
 const asgClient = new AutoScalingClient({ region: "eu-north-1" });
 export const handler = async (event) => {
     try {
         console.log('## EVENT: ' + JSON.stringify(event));
-        let password = event['queryStringParameters']['password']
-        if (password !== 'banan') {
+
+        const gameConfigs: GameConfiguration[] = JSON.parse(process.env.CONFIGURATIONS);
+
+        const password = event['queryStringParameters']['password']
+        const gameServerId = event['queryStringParameters']['id']
+
+        const config: GameConfiguration = gameConfigs.find(c => c.gameServerId === gameServerId);
+
+        if (password !== config.password) {
             return {
                 statusCode: 200,
                 body: JSON.stringify({
@@ -16,7 +24,7 @@ export const handler = async (event) => {
         }
 
         const command = new SetDesiredCapacityCommand({
-            AutoScalingGroupName: process.env.AUTOSCALING_GROUP_NAME,
+            AutoScalingGroupName: config.autoscalingGroupName,
             DesiredCapacity: 1,
             HonorCooldown: false,
         });
@@ -26,8 +34,8 @@ export const handler = async (event) => {
         const allValheimInstancesParams = {
             Filters: [
                 {
-                    Name: 'tag:Name',
-                    Values: ['valheim-server/ASG']
+                    Name: 'tag:GameServerId',
+                    Values: [gameServerId]
                 }
             ]
         };

@@ -8,7 +8,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = 'ax.dkarlsso.valheim.ValheimCdkApp'
+mainClassName = 'ax.dkarlsso.game_management.CdkApp'
 group = 'ax.dkarlsso'
 version = '1.0'
 
@@ -22,6 +22,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    implementation 'software.amazon.awscdk:aws-cdk-lib:2.134.0'
+    implementation 'software.amazon.awscdk:aws-cdk-lib:2.148.0'
     implementation 'software.constructs:constructs:10.3.0'
 }
