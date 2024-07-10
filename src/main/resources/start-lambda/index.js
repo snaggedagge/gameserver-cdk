@@ -49,7 +49,13 @@ export const handler = async (event) => {
             body: JSON.stringify({
                 message: 'Instance is running',
                 ipAddresses: ipAddresses
-            })
+            }),
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Methods": "*"
+            }
         };
 
     } catch (error) {

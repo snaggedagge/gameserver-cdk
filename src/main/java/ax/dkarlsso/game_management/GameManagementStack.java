@@ -78,7 +78,10 @@ public class GameManagementStack extends Stack {
                         .stageName("start")
                         .build())
                 .defaultCorsPreflightOptions(CorsOptions.builder()
-                        .allowOrigins(List.of("*"))
+                        .allowMethods(Cors.ALL_METHODS)
+                        .allowOrigins(Cors.ALL_ORIGINS)
+                        .allowHeaders(Cors.DEFAULT_HEADERS)
+                        .exposeHeaders(List.of("Access-Control-Allow-Origin"))
                         .build())
                 .build();
 
@@ -136,7 +139,7 @@ public class GameManagementStack extends Stack {
         zone.ifPresent(iHostedZone -> ARecord.Builder.create(this, "BucketRecord")
                 .zone(iHostedZone)
                 .target(RecordTarget.fromAlias(new BucketWebsiteTarget(bucket)))
-                .recordName(bucket.getBucketName())
+                .recordName("game-management." + iHostedZone.getZoneName())
                 .build());
 
         var gameInfo = gameServers.stream()
