@@ -4,6 +4,7 @@ import ax.dkarlsso.game_management.Scripts;
 import lombok.experimental.SuperBuilder;
 import software.amazon.awscdk.services.ec2.Port;
 
+import java.net.URI;
 import java.util.List;
 
 @SuperBuilder
@@ -17,8 +18,12 @@ public class Enshrouded extends AbstractGame {
     // TODO: Clean up all ports. Unknown which are needed still
     @Override
     public List<Port> getPorts() {
-        return List.of(Port.udpRange(15636, 15637), Port.tcpRange(15636, 15637),
-                Port.udp(27015),Port.tcp(27015), Port.udpRange(27031, 27036));
+        return List.of(Port.udpRange(15636, 15637), Port.udp(27015),Port.tcp(27015), Port.udpRange(27031, 27036));
+    }
+
+    @Override
+    public URI getLogo() {
+        return URI.create("https://wiki.eso-ui.com/images/thumb/d/d1/Enshrouded-logo.webp/611px-Enshrouded-logo.webp.png");
     }
 
     //// TODO: Docker container does not start weell, disc problem or bad container?
@@ -31,7 +36,7 @@ public class Enshrouded extends AbstractGame {
                     --name game \\
                     --cap-add=sys_nice \\
                     --stop-timeout 120 \\
-                    -p 15636:15636/udp \\
+                    -p 15636-15637:15636-15637/udp \\
                     -p 27015:27015/tcp \\
                     -p 27031-27036:27031-27036/udp \\
                     -v /mnt/game/enshrouded:/opt/enshrouded \\

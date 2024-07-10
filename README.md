@@ -9,10 +9,10 @@ ASG's was chosen in order to leverage EC2 spot instances.
 
 It is possible to choose between using EBS for storage, or EFS.
 
-This server is started by entering a URL such as https://game-management.dkarlsso.com/start?password=superSecret 
-into the browser, which will boot up the EC2 instance before you have had time to start the game and connect.
+The game servers can be started by going to http://game-management.dkarlsso.com and selecting the one you want.
+The GUI is presented with a simple S3 bucket, and data is sourced from a JSON file which aws constructed and deployed to S3 during deployment.
 
-That is done with a simple Lambda, connected to API Gateway.
+A small lambda connected to an API Gateway boots up the game server by changing desired size of ASG to 1.
 
 The EC2 instance keeps track of if the server is empty via a simple CRON script running on server. 
 So it runs every 30 minutes, and if the server is empty it will update the ASG desired size to 0, 

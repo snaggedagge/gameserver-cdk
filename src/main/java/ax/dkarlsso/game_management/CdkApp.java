@@ -38,7 +38,7 @@ public class CdkApp {
                                 .gameServerId("enshrouded")
                                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.XLARGE))
                                 .build(),
-                        List.of(new EbsDiscFeature(Size.gibibytes(60)), new Route53Feature(zoneAttributes, "enshrouded.dkarlsso.com")),
+                        List.of(new EbsDiscFeature(Size.gibibytes(20)), new Route53Feature(zoneAttributes, "enshrouded.dkarlsso.com")),
                         List.of("eu-north-1c"))
 /*
                 GameServerStack.create(app, props,

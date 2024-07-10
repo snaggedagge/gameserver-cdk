@@ -4,6 +4,7 @@ import ax.dkarlsso.game_management.features.Feature;
 import ax.dkarlsso.game_management.games.Game;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.Tags;
@@ -19,6 +20,7 @@ import software.amazon.awscdk.services.s3.deployment.Source;
 import software.constructs.Construct;
 
 import java.util.List;
+import java.util.Optional;
 
 import static ax.dkarlsso.game_management.Scripts.*;
 
@@ -43,6 +45,8 @@ public class GameServerStack extends Stack {
 
     private final Game game;
 
+    private final List<Feature> features;
+
     public static GameServerStack create(final Construct scope,
                                   final StackProps props,
                                   final Game game,
@@ -54,13 +58,22 @@ public class GameServerStack extends Stack {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("A disc feature must be provided"));
 
-        var gameServerStack = new GameServerStack(scope, props, game, availabilityZones);
+        var gameServerStack = new GameServerStack(scope, props, game, availabilityZones, features);
         gameServerStack.applyFeatures(gameServerStack, features, availabilityZones);
         return gameServerStack;
     }
 
-    private GameServerStack(@NotNull Construct scope, StackProps props, Game game, List<String> availabilityZones) {
+    public <T extends Feature> Optional<T> getFeature(Class<T> type) {
+        return Optional.ofNullable(type.cast(
+                features.stream()
+                        .filter(f -> type.isAssignableFrom(f.getClass()))
+                        .findFirst()
+                        .orElse(null)));
+    }
+
+    private GameServerStack(@NotNull Construct scope, StackProps props, Game game, List<String> availabilityZones, List<Feature> features) {
         super(scope, game.getGameServerId(), props);
+        this.features = features;
         this.vpc = Vpc.fromLookup(this, "Vpc", VpcLookupOptions.builder()
                 .isDefault(true)
                 .build());
@@ -70,6 +83,8 @@ public class GameServerStack extends Stack {
         scriptBucket = Bucket.Builder.create(this, gameServerId + "ScriptBucket")
                 .bucketName(gameServerId + "-server-scripts")
                 .accessControl(BucketAccessControl.PRIVATE)
+                .autoDeleteObjects(true)
+                .removalPolicy(RemovalPolicy.DESTROY)
                 .build();
 
         final SecurityGroup instanceSecurityGroup = SecurityGroup.Builder.create(this, gameServerId + "SecurityGroup")
@@ -127,6 +142,7 @@ public class GameServerStack extends Stack {
                         .subnetType(SubnetType.PUBLIC)
                         .build())
                 .build();
+        scripts.addToEnvironmentScript("export AUTOSCALING_GROUP=\"%s\"".formatted(autoScalingGroup.getAutoScalingGroupName()));
         Tags.of(autoScalingGroup).add("GameServerId", gameServerId);
 
         role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"));
@@ -155,6 +171,7 @@ public class GameServerStack extends Stack {
                         Source.data(ENVIRONMENT_VARIABLES_SCRIPT_NAME, this.scripts.getEnvironmentScript()),
                         Source.data(startupScript, this.scripts.getStartupScript())))
                 .destinationBucket(scriptBucket)
+                .retainOnDelete(false)
                 .build();
 
         userData.addCommands(

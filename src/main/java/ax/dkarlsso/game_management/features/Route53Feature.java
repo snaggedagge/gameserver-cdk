@@ -2,6 +2,7 @@ package ax.dkarlsso.game_management.features;
 
 import ax.dkarlsso.game_management.GameServerStack;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.services.iam.PolicyStatement;
@@ -20,6 +21,7 @@ public final class Route53Feature implements Feature {
     private final HostedZoneAttributes hostedZoneAttributes;
 
     /** Domain name, such as valheim.dkarlsso.com */
+    @Getter
     private final String domainName;
 
     @Override

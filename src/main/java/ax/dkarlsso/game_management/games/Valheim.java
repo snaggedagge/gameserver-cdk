@@ -4,6 +4,7 @@ import ax.dkarlsso.game_management.Scripts;
 import lombok.experimental.SuperBuilder;
 import software.amazon.awscdk.services.ec2.Port;
 
+import java.net.URI;
 import java.util.List;
 
 @SuperBuilder
@@ -17,6 +18,11 @@ public class Valheim extends AbstractGame {
     @Override
     public List<Port> getPorts() {
         return List.of(Port.udpRange(2456, 2458), Port.tcp(80), Port.tcp(9001));
+    }
+
+    @Override
+    public URI getLogo() {
+        return URI.create("https://www.gamehostbros.com/wp-content/uploads/2023/04/Valheim-logo-png-transparent.webp");
     }
 
     @Override

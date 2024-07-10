@@ -1,18 +1,17 @@
 import { EC2Client, DescribeInstancesCommand, StartInstancesCommand } from "@aws-sdk/client-ec2";
 import { AutoScalingClient, SetDesiredCapacityCommand } from "@aws-sdk/client-auto-scaling";
-import { GameConfiguration } from "./game-configuration.ts";
 const client = new EC2Client({ region: "eu-north-1" });
 const asgClient = new AutoScalingClient({ region: "eu-north-1" });
 export const handler = async (event) => {
     try {
         console.log('## EVENT: ' + JSON.stringify(event));
 
-        const gameConfigs: GameConfiguration[] = JSON.parse(process.env.CONFIGURATIONS);
+        const gameConfigs = JSON.parse(process.env.CONFIGURATIONS);
 
         const password = event['queryStringParameters']['password']
         const gameServerId = event['queryStringParameters']['id']
 
-        const config: GameConfiguration = gameConfigs.find(c => c.gameServerId === gameServerId);
+        const config = gameConfigs.find(c => c.gameServerId === gameServerId);
 
         if (password !== config.password) {
             return {

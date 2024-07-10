@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .game-box {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .game-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-light">
+    <span class="navbar-brand mb-0 h1">SnaGGeN's Game Management</span>
+</nav>
+
+<div class="container mt-3">
+    <p>In order to start the game, you have to press the boxes.</p>
+    <div id="game-container" class="row">
+        <!-- Game boxes will be loaded here -->
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $.getJSON('games.json', function(games) {
+            games.forEach(function(game) {
+                $('#game-container').append(
+                    '<div class="col-md-4 mb-3">' +
+                    '<div class="card game-box">' +
+                    '<img src="' + game.logo + '" class="card-img-top" alt="' + game.name + '">' +
+                    '<div class="card-body">' +
+                    '<h5 class="card-title">' + game.name + '</h5>' +
+                    '<p class="card-text">Hostname: ' + game.hostname + '</p>' +
+                    '<p class="card-text">String ID: ' + game.id + '</p>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+            });
+
+            $('.game-box').click(function() {
+                var gameId = $(this).find('.card-text').last().text().split(': ')[1];
+                var password = prompt('Please enter the password:');
+                if (password) {
+                    $.get('https://game-management-api.dkarlsso.com/start', { id: gameId, password: password }, function(response) {
+                        alert('Game started successfully!');
+                    }).fail(function() {
+                        alert('Failed to start the game.');
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
