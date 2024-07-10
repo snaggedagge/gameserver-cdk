@@ -34,7 +34,7 @@ public class CdkApp {
                 GameServerStack.create(app, props,
                         Enshrouded.builder()
                                 .serverName("SnaGGShroud")
-                                .serverPassword("banan")
+                                .serverPassword("secret-pass") // Should come from SecretsManager
                                 .gameServerId("enshrouded")
                                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.XLARGE))
                                 .build(),
@@ -43,17 +43,17 @@ public class CdkApp {
 /*
                 GameServerStack.create(app, props,
                         Valheim.builder()
-                                        .serverName("SnaGGHeim")
-                                        .serverPassword("banan")
-                                        .gameServerId("valheim")
-                                        .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MEDIUM))
-                                        .build(),
+                                .serverName("SnaGGHeim")
+                                .serverPassword("secret-pass") // Should come from SecretsManager
+                                .gameServerId("valheim")
+                                .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MEDIUM))
+                                .build(),
                         List.of(new EbsDiscFeature(Size.gibibytes(10)), new Route53Feature(zoneAttributes, "valheim.dkarlsso.com")),
                         List.of("eu-north-1c")),
                 GameServerStack.create(app, props,
                         Valheim.builder()
                                 .serverName("Ronheim")
-                                .serverPassword("banan")
+                                .serverPassword("secret-pass") // Should come from SecretsManager
                                 .gameServerId("ronnys-valheim")
                                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.LARGE))
                                 .build(),
