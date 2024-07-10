@@ -61,7 +61,7 @@ public class GameManagementStack extends Stack {
                 .validation(CertificateValidation.fromDns(zone))
                 .build());
 
-        //var guiBucket = createWebsiteGUI(this, hostedZone, gameServers);
+        var guiBucket = createWebsiteGUI(this, hostedZone, gameServers);
 
         final LambdaRestApi api = LambdaRestApi.Builder.create(this, "Api")
                 .restApiName("game-start-api")
