@@ -23,7 +23,7 @@ public class Valheim extends AbstractGame {
 
     @Override
     public URI getLogo() {
-        return URI.create("https://www.gamehostbros.com/wp-content/uploads/2023/04/Valheim-logo-png-transparent.webp");
+        return URI.create("https://upload.wikimedia.org/wikipedia/fi/b/bf/Valheim-logo.png");
     }
 
     @Override
