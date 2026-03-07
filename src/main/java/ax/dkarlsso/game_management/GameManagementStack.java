@@ -22,6 +22,7 @@ import software.amazon.awscdk.services.route53.targets.BucketWebsiteTarget;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.deployment.BucketDeployment;
+import software.amazon.awscdk.services.s3.deployment.CacheControl;
 import software.amazon.awscdk.services.s3.deployment.Source;
 import software.constructs.Construct;
 
@@ -145,15 +146,16 @@ public class GameManagementStack extends Stack {
         var gameInfo = gameServers.stream()
                 .map(gameServerStack -> new GameInformation(gameServerStack.getGame().getGameServerId(),
                         gameServerStack.getFeature(Route53Feature.class).map(Route53Feature::getDomainName).orElse(null),
-                        gameServerStack.getGame().getLogo(), gameServerStack.getGame().getGameServerId()))
+                        gameServerStack.getGame().getLogo(), gameServerStack.getGame().getServerName()))
                 .toList();
 
         BucketDeployment.Builder.create(stack, "Upload")
                 .sources(List.of(
-                        Source.data("games.json", new ObjectMapper().writeValueAsString(gameInfo)),
+                        Source.data("games-1.json", new ObjectMapper().writeValueAsString(gameInfo)),
                 Source.asset("src/main/resources/gui")))
                 .destinationBucket(bucket)
                 .retainOnDelete(false)
+                .cacheControl(List.of(CacheControl.noCache(), CacheControl.noStore(), CacheControl.mustRevalidate()))
                 .build();
         return bucket;
     }

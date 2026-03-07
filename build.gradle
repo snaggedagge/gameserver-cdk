@@ -8,20 +8,23 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = 'ax.dkarlsso.game_management.CdkApp'
+application {
+    mainClass = 'ax.dkarlsso.game_management.CdkApp'
+}
+
 group = 'ax.dkarlsso'
 version = '1.0'
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
-    implementation 'software.amazon.awscdk:aws-cdk-lib:2.148.0'
-    implementation 'software.constructs:constructs:10.3.0'
+    implementation 'software.amazon.awscdk:aws-cdk-lib:2.241.0'
+    implementation 'software.constructs:constructs:10.5.1'
 }

@@ -33,7 +33,7 @@
 
 <script>
     $(document).ready(function() {
-        $.getJSON('games.json', function(games) {
+        $.getJSON('games-1.json', function(games) {
             games.forEach(function(game) {
                 $('#game-container').append(
                     '<div class="col-md-4 mb-3">' +
@@ -42,7 +42,7 @@
                     '<div class="card-body">' +
                     '<h5 class="card-title">' + game.name + '</h5>' +
                     '<p class="card-text">Hostname: ' + game.hostname + '</p>' +
-                    '<p class="card-text">String ID: ' + game.id + '</p>' +
+                    '<p class="card-text">Id: ' + game.id + '</p>' +
                     '</div>' +
                     '</div>' +
                     '</div>'

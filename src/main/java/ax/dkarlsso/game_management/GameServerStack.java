@@ -73,6 +73,7 @@ public class GameServerStack extends Stack {
 
     private GameServerStack(@NotNull Construct scope, StackProps props, Game game, List<String> availabilityZones, List<Feature> features) {
         super(scope, game.getGameServerId(), props);
+        Tags.of(this).add("GameServerId", game.getGameServerId());
         this.features = features;
         this.vpc = Vpc.fromLookup(this, "Vpc", VpcLookupOptions.builder()
                 .isDefault(true)
@@ -81,9 +82,8 @@ public class GameServerStack extends Stack {
 
         var gameServerId = game.getGameServerId();
         scriptBucket = Bucket.Builder.create(this, gameServerId + "ScriptBucket")
-                .bucketName(gameServerId + "-server-scripts")
+                .bucketName(getAccount() + "-" + gameServerId + "-server-scripts")
                 .accessControl(BucketAccessControl.PRIVATE)
-                .autoDeleteObjects(true)
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .build();
 
@@ -98,16 +98,23 @@ public class GameServerStack extends Stack {
             Regular pricing
             t3.medium $0.0418
             t3.large $0.0835
+            t3.xlarge $0.1670
 
             Spot pricing
             r7a.medium: 0.023 $ per hour
-            t3.medium: eu-north-1a: $0.020900
-            t3large: 0.039 in a and b, 0.033 in c
+            t3.medium: 0.0140
+            t3.large: 0.0284 in C
+            t3.xlarge: 0.0567 in C
+
+            c7a.large $0.0334
+            c7a.xlarge $0.0715
          */
         var spotPrice = switch (game.getInstanceType().toString()) {
-            case "t3.xlarge" ->  0.65;
-            case "t3.large" ->  0.30;
-            case "t3.medium" ->  0.40;
+            case "t3.medium" ->  0.04;
+            case "t3.large" ->  0.06;
+            case "t3.xlarge" ->  0.12;
+            case "c7a.large" ->  0.05;
+            case "c7a.xlarge" ->  0.13;
             default -> throw new IllegalStateException("Unconfigured spotprice for: " + game.getInstanceType().toString());
         };
 
@@ -116,11 +123,20 @@ public class GameServerStack extends Stack {
                 .build();
 
         var launchTemplate = LaunchTemplate.Builder.create(this, gameServerId + "Template")
-                .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.XLARGE))
+                .instanceType(game.getInstanceType())
                 .machineImage(AmazonLinuxImage.Builder.create()
                         .cpuType(AmazonLinuxCpuType.X86_64)
                         .generation(AmazonLinuxGeneration.AMAZON_LINUX_2023)
                         .build())
+                .blockDevices(List.of(BlockDevice.builder()
+                        // 4 Extra gigabyte for OS etc.
+                                .volume(BlockDeviceVolume.ebs(game.getDiscSizeRequired().toGibibytes().intValue() + 4, EbsDeviceOptions.builder()
+                                                .encrypted(false)
+                                                .volumeType(EbsDeviceVolumeType.GP3)
+                                        .deleteOnTermination(true).build()))
+                                .deviceName("/dev/xvda")
+
+                        .build()))
                 .securityGroup(instanceSecurityGroup)
                 .requireImdsv2(true)
                 .spotOptions(LaunchTemplateSpotOptions.builder()
@@ -154,7 +170,7 @@ public class GameServerStack extends Stack {
                 .build());
         role.addToPrincipalPolicy(PolicyStatement.Builder.create()
                 .actions(List.of("s3:*"))
-                .resources(List.of(scriptBucket.getBucketArn(), scriptBucket.getBucketArn() + "/*"))
+                .resources(List.of("*"))
                 .build());
     }
 
@@ -164,18 +180,22 @@ public class GameServerStack extends Stack {
 
         var checkPlayersScriptName = "check-players.sh";
         var startupScript = "startup.sh";
+        var shutdownScript = "shutdown.sh";
 
         BucketDeployment.Builder.create(stack, "Upload")
                 .sources(List.of(
                         Source.data(checkPlayersScriptName, generateCheckPlayersScript()),
                         Source.data(ENVIRONMENT_VARIABLES_SCRIPT_NAME, this.scripts.getEnvironmentScript()),
-                        Source.data(startupScript, this.scripts.getStartupScript())))
+                        Source.data(startupScript, this.scripts.getStartupScript()),
+                        Source.data(shutdownScript, this.scripts.getShutdownScript())))
                 .destinationBucket(scriptBucket)
                 .retainOnDelete(false)
                 .build();
 
+
         userData.addCommands(
                 copyShellScript(scriptBucket, startupScript, "/tmp/"),
+                copyShellScript(scriptBucket, shutdownScript, "/tmp/"),
                 copyShellScript(scriptBucket, checkPlayersScriptName, "/tmp/"),
                 copyShellScript(scriptBucket, ENVIRONMENT_VARIABLES_SCRIPT_NAME, ENVIRONMENT_VARIABLES_SCRIPT_FOLDER),
                 "/tmp/" + startupScript
@@ -190,15 +210,21 @@ public class GameServerStack extends Stack {
     private String generateCheckPlayersScript() {
         return """
                 #!/bin/bash
-                                
                 source %s
-                                
+                
+                if awk '{exit !($1/3600 > 12)}' /proc/uptime; then
+                    echo "Instance has been running for more than 12 hours. Shutting down"
+                    /tmp/shutdown.sh
+                    aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$AUTOSCALING_GROUP" --desired-capacity 0
+                fi
+
                 NUM_PLAYERS=$(npx gamedig --type %s "$IP" | jq .numplayers)
                 uptime_minutes=$(awk '{print int($1)}' /proc/uptime)
                 if [ "$NUM_PLAYERS" == "0" ]; then
                    echo "Server is empty"
                    if [ "$uptime_minutes" -gt 1800 ]; then
                      echo "The system has been running for more than 30 minutes and is empty, shutting down"
+                     /tmp/shutdown.sh
                      aws autoscaling update-auto-scaling-group --auto-scaling-group-name "$AUTOSCALING_GROUP" --desired-capacity 0
                    else
                      echo "The system has been up for less than 30 minutes."

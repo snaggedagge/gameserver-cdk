@@ -2,6 +2,7 @@ package ax.dkarlsso.game_management.games;
 
 import ax.dkarlsso.game_management.Scripts;
 import lombok.experimental.SuperBuilder;
+import software.amazon.awscdk.Size;
 import software.amazon.awscdk.services.ec2.Port;
 
 import java.net.URI;
@@ -44,10 +45,16 @@ public class Valheim extends AbstractGame {
                     -e SERVER_PASS="%s" \\
                     -e STATUS_HTTP="true" \\
                     -e SUPERVISOR_HTTP="true" \\
+                    -e BEPINEX="false" \\
                     -e SUPERVISOR_HTTP_PASS="%s" \\
                     ghcr.io/lloesche/valheim-server
                 # STATUS_HTTP enables a /status.json resource
                 # Supervisor enabled on port 9001
                 """.formatted(serverName, serverPassword, serverPassword));
+    }
+
+    @Override
+    public Size getDiscSizeRequired() {
+        return Size.gibibytes(12);
     }
 }

@@ -2,6 +2,7 @@ package ax.dkarlsso.game_management.games;
 
 import ax.dkarlsso.game_management.Scripts;
 import lombok.experimental.SuperBuilder;
+import software.amazon.awscdk.Size;
 import software.amazon.awscdk.services.ec2.Port;
 
 import java.net.URI;
@@ -50,5 +51,10 @@ public class Enshrouded extends AbstractGame {
                     -e PGID=4711 \\
                     mornedhels/enshrouded-server:latest
                 """.formatted(serverName, serverPassword));
+    }
+
+    @Override
+    public Size getDiscSizeRequired() {
+        return Size.gibibytes(20);
     }
 }

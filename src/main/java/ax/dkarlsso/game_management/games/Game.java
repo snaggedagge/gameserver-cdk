@@ -1,6 +1,7 @@
 package ax.dkarlsso.game_management.games;
 
 import ax.dkarlsso.game_management.Scripts;
+import software.amazon.awscdk.Size;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.Port;
 
@@ -14,8 +15,9 @@ public interface Game {
     String getGameServerId();
     URI getLogo();
     String getServerPassword();
-
+    String getServerName();
     InstanceType getInstanceType();
 
+    Size getDiscSizeRequired();
     void addStartupScript(Scripts scripts);
 }
