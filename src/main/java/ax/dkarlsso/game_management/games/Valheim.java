@@ -29,7 +29,7 @@ public class Valheim extends AbstractGame {
     @Override
     public void addStartupScript(Scripts scripts) {
         scripts.addToStartupScript("""
-                # Docs https://github.com/lloesche/valheim-server-docker?tab=readme-ov-file
+                # Docs https://github.com/community-valheim-tools/valheim-server-docker
                 docker run -d \\
                     --name game \\
                     --cap-add=sys_nice \\
@@ -45,9 +45,9 @@ public class Valheim extends AbstractGame {
                     -e SERVER_PASS="%s" \\
                     -e STATUS_HTTP="true" \\
                     -e SUPERVISOR_HTTP="true" \\
-                    -e BEPINEX="false" \\
+                    -e BEPINEX="true" \\
                     -e SUPERVISOR_HTTP_PASS="%s" \\
-                    ghcr.io/lloesche/valheim-server
+                    ghcr.io/community-valheim-tools/valheim-server
                 # STATUS_HTTP enables a /status.json resource
                 # Supervisor enabled on port 9001
                 """.formatted(serverName, serverPassword, serverPassword));
