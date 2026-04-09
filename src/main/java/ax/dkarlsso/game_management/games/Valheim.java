@@ -57,4 +57,18 @@ public class Valheim extends AbstractGame {
     public Size getDiscSizeRequired() {
         return Size.gibibytes(12);
     }
+
+    @Override
+    public String getSyncToS3Command(final String s3BucketName) {
+        return """
+                if [ -d "/mnt/game/config/backups" ]; then
+                  aws s3 sync /mnt/game/config/backups s3://%1$s/config/backups --delete
+                fi
+                if [ -d "/mnt/game/config/worlds_local" ]; then
+                  aws s3 sync /mnt/game/config/worlds_local s3://%1$s/config/worlds_local --delete
+                fi
+                aws s3 sync /mnt/game/config s3://%1$s/config --exclude "*/bepinex.tmp/*"
+                aws s3 sync /mnt/game/data s3://%1$s/data --delete --exclude "*/bepinex.tmp/*"
+                """.formatted(s3BucketName);
+    }
 }

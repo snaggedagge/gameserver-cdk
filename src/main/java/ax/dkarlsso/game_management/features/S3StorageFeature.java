@@ -4,11 +4,8 @@ import ax.dkarlsso.game_management.GameServerStack;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import software.amazon.awscdk.RemovalPolicy;
-import software.amazon.awscdk.Size;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.Tags;
-import software.amazon.awscdk.services.ec2.EbsDeviceVolumeType;
-import software.amazon.awscdk.services.ec2.Volume;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.BucketAccessControl;
@@ -34,22 +31,20 @@ public class S3StorageFeature implements Feature.DiscFeature {
                 .build();
         Tags.of(bucket).add("GameServerId", gameServerStack.getGame().getGameServerId());
 
-        // TODO: This is now valheim specific. Fix for other
         gameServerStack.getScripts().addToStartupScript("""
                 mkdir -p /mnt/game
                 chmod -R 777 /mnt/game
                 aws s3 sync s3://%s /mnt/game
                 
-                cat > /tmp/update-s3.sh << EOF
+                cat > /tmp/sync-to-s3.sh << EOF
                 #!/bin/bash
-                aws s3 sync /mnt/game/config s3://%s/config --exclude "*/bepinex.tmp/*"
-                aws s3 sync /mnt/game/data s3://%s/data --delete --exclude "*/bepinex.tmp/*"
+                %s
                 EOF
-                chmod +x /tmp/update-s3.sh
-                (sleep 600 && (crontab -l 2>/dev/null; echo "*/5 * * * * /tmp/update-s3.sh") | crontab -) &
-                """.formatted(bucket.getBucketName(), bucket.getBucketName(), bucket.getBucketName()));
+                chmod +x /tmp/sync-to-s3.sh
+                (sleep 600 && (crontab -l 2>/dev/null; echo "*/5 * * * * /tmp/sync-to-s3.sh") | crontab -) &
+                """.formatted(bucket.getBucketName(), gameServerStack.getGame().getSyncToS3Command(bucket.getBucketName())));
 
-        gameServerStack.getScripts().addToShutdownScript("/tmp/update-s3.sh");
+        gameServerStack.getScripts().addToShutdownScript("/tmp/sync-to-s3.sh");
 
         gameServerStack.getRole().addToPrincipalPolicy(PolicyStatement.Builder.create()
                 .actions(List.of(

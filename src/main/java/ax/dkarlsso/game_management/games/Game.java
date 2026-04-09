@@ -20,4 +20,8 @@ public interface Game {
 
     Size getDiscSizeRequired();
     void addStartupScript(Scripts scripts);
+
+    default public String getSyncToS3Command(final String s3BucketName) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -57,4 +57,10 @@ public class Enshrouded extends AbstractGame {
     public Size getDiscSizeRequired() {
         return Size.gibibytes(20);
     }
+
+    @Override
+    public String getSyncToS3Command(String s3BucketName) {
+        // TODO: Implement for it to be usable
+        return "";
+    }
 }
